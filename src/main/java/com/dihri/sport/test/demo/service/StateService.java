@@ -22,27 +22,30 @@ public class StateService {
             State expectedState = ref.get();
             updatedState.setLevel(expectedState.getLevel());
             updatedState.setExp(expectedState.getExp());
-            int commonExp = exp;
-            while(commonExp>0) {
-                int currentLevel = updatedState.getLevel();
-                int currentExp = updatedState.getExp();
-                int maxExp = levelup.getMaxExp(currentLevel);
-                boolean hasNextLevel = levelup.hasNext(currentLevel);
-
-                if(!hasNextLevel || currentExp+commonExp<maxExp) {
-                    updatedState.setExp(currentExp+commonExp);
-                    updatedState.setLevel(currentLevel);
-                    commonExp=0;
-                } else {
-                    currentLevel++;
-                    updatedState.setExp(0);
-                    updatedState.setLevel(currentLevel);
-                    commonExp=commonExp-(maxExp-currentExp);
-                }
-            }
+            updateState(exp,updatedState);
             success=ref.compareAndSet(expectedState,updatedState);
         }
         return updatedState;
+    }
+
+    private void updateState(int exp, State state) {
+        while(exp>0) {
+            int currentLevel = state.getLevel();
+            int currentExp = state.getExp();
+            int maxExp = levelup.getMaxExp(currentLevel);
+            boolean hasNextLevel = levelup.hasNext(currentLevel);
+
+            if(!hasNextLevel || currentExp+exp<maxExp) {
+                state.setExp(currentExp+exp);
+                state.setLevel(currentLevel);
+                exp=0;
+            } else {
+                currentLevel++;
+                state.setExp(0);
+                state.setLevel(currentLevel);
+                exp=exp-(maxExp-currentExp);
+            }
+        }
     }
 
 
