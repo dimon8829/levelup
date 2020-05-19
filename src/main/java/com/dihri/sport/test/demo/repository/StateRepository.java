@@ -4,15 +4,18 @@ import com.dihri.sport.test.demo.model.State;
 import org.springframework.stereotype.Repository;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
 @Repository
 public class StateRepository {
 
-    private ConcurrentMap<Integer, AtomicReference<State>> cache = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer,State> cache = new ConcurrentHashMap<>();
 
-    public AtomicReference<State> getState(Integer id) {
-        cache.putIfAbsent(id,new AtomicReference<>(new State(0,1)));
-        return cache.get(id);
+    public State insertState(Integer id, BiFunction<Integer,State,State> calculateState) {
+        return cache.compute(id,calculateState);
+    }
+
+    public State getState(Integer id) {
+        return cache.getOrDefault(id,new State(0,1));
     }
 }

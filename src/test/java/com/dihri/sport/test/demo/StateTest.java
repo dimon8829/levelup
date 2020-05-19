@@ -7,10 +7,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+
+import java.util.concurrent.*;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
@@ -76,10 +75,12 @@ public class StateTest {
         CountDownLatch cdl = new CountDownLatch(count);
         int userId = ThreadLocalRandom.current().nextInt(1,  Integer.MAX_VALUE);
         for(int i=0;i<count;i++) {
-            executor.submit(() -> {
+            Future future = executor.submit(() -> {
                 stateService.updateState(userId,1);
                 cdl.countDown();
+                return 6;
             });
+
         }
         cdl.await();
         //check user

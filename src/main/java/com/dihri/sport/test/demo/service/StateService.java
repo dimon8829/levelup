@@ -4,7 +4,6 @@ import com.dihri.sport.test.demo.model.State;
 import com.dihri.sport.test.demo.repository.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class StateService {
@@ -15,20 +14,11 @@ public class StateService {
     private StateRepository stateRepository;
 
     public State updateState(Integer id, Integer exp) {
-        AtomicReference<State> ref = stateRepository.getState(id);
-        State updatedState = new State();
-        boolean success = false;
-        while (!success) {
-            State expectedState = ref.get();
-            updatedState.setLevel(expectedState.getLevel());
-            updatedState.setExp(expectedState.getExp());
-            updateState(exp,updatedState);
-            success=ref.compareAndSet(expectedState,updatedState);
-        }
-        return updatedState;
+        return stateRepository.insertState(id, (key,value) -> updateState(exp,value));
     }
 
-    private void updateState(int exp, State state) {
+    private State updateState(int exp, State state) {
+        if(state==null) state = new State(0,1);
         while(exp>0) {
             int currentLevel = state.getLevel();
             int currentExp = state.getExp();
@@ -46,12 +36,12 @@ public class StateService {
                 exp=exp-(maxExp-currentExp);
             }
         }
+        return state;
     }
 
 
 
     public State getState(Integer id) {
-        AtomicReference<State> ref = stateRepository.getState(id);
-        return ref.get();
+        return stateRepository.getState(id);
     }
 }
